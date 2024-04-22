@@ -59,53 +59,53 @@ const  char *hue_resp3 = "ST: urn:schemas-upnp-org:device:basic:1\r\n"
    "\r\n";
 
 void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
-	//const char *useType;
+    //const char *useType;
 
-	if (g_uid == 0) {
-		// not running
-		return;
-	}
+    if (g_uid == 0) {
+        // not running
+        return;
+    }
 
-	stat_searchesReceived++;
+    stat_searchesReceived++;
 
-	if (buffer_out == 0) {
-		outBufferLen = strlen(hue_resp) + 256;
-		buffer_out = (char*)malloc(outBufferLen);
-	}
-	{
-		// ARGUMENTS: first IP, then bridgeID
-		snprintf(buffer_out, outBufferLen, hue_resp, HAL_GetMyIPString(), g_bridgeID);
+    if (buffer_out == 0) {
+        outBufferLen = strlen(hue_resp) + 256;
+        buffer_out = (char*)malloc(outBufferLen);
+    }
+    
+        // ARGUMENTS: first IP, then bridgeID
+        snprintf(buffer_out, outBufferLen, hue_resp, HAL_GetMyIPString(), g_bridgeID);
 
-		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[0] %s", buffer_out);
-		DRV_SSDP_SendReply(addr, buffer_out);
-	}
-	{
-		// ARGUMENTS: uuid
-		snprintf(buffer_out, outBufferLen, hue_resp1, g_uid);
+        addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[0] %s", buffer_out);
+        DRV_SSDP_SendReply(addr, buffer_out);
+    
+    
+        // ARGUMENTS: uuid
+        snprintf(buffer_out, outBufferLen, hue_resp1, g_uid);
 
-		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[1] %s", buffer_out);
-		DRV_SSDP_SendReply(addr, buffer_out);
-	}
-	{
-		// ARGUMENTS: uuid and uuid
-		snprintf(buffer_out, outBufferLen, hue_resp2, g_uid, g_uid);
+        addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[1] %s", buffer_out);
+        DRV_SSDP_SendReply(addr, buffer_out);
+    
+    
+        // ARGUMENTS: uuid and uuid
+        snprintf(buffer_out, outBufferLen, hue_resp2, g_uid, g_uid);
 
-		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[2] %s", buffer_out);
-		DRV_SSDP_SendReply(addr, buffer_out);
-	}
-	{
-		// ARGUMENTS: uuid
-		snprintf(buffer_out, outBufferLen, hue_resp3, g_uid);
+        addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[2] %s", buffer_out);
+        DRV_SSDP_SendReply(addr, buffer_out);
+    
+    
+        // ARGUMENTS: uuid
+        snprintf(buffer_out, outBufferLen, hue_resp3, g_uid);
 
-		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[3] %s", buffer_out);
-		DRV_SSDP_SendReply(addr, buffer_out);
-	}
+        addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[3] %s", buffer_out);
+        DRV_SSDP_SendReply(addr, buffer_out);
+    
 }
 
 
 void HUE_AppendInformationToHTTPIndexPage(http_request_t* request) {
-	hprintf255(request, "<h4>HUE: searches %i, setup %i, events %i, mService %i, event %i </h4>",
-		stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived, stat_metaServiceXMLVisits, stat_eventServiceXMLVisits);
+    hprintf255(request, "<h4>HUE: searches %i, setup %i, events %i, mService %i, event %i </h4>",
+        stat_searchesReceived, stat_setupXMLVisits, stat_eventsReceived, stat_metaServiceXMLVisits, stat_eventServiceXMLVisits);
 
 }
 
@@ -139,60 +139,84 @@ const char *g_hue_setup_5 = "</UDN>"
    "\r\n";
 
 static int HUE_Setup(http_request_t* request) {
-	http_setup(request, httpMimeTypeXML);
-	poststr(request, g_hue_setup_1);
-	poststr(request, HAL_GetMyIPString());
-	poststr(request, g_hue_setup_2);
-	poststr(request, HAL_GetMyIPString());
-	poststr(request, g_hue_setup_3);
-	poststr(request, g_serial);
-	poststr(request, g_hue_setup_4);
-	poststr(request, g_uid);
-	poststr(request, g_hue_setup_5);
-	poststr(request, NULL);
+    http_setup(request, httpMimeTypeXML);
+    poststr(request, g_hue_setup_1);
+    poststr(request, HAL_GetMyIPString());
+    poststr(request, g_hue_setup_2);
+    poststr(request, HAL_GetMyIPString());
+    poststr(request, g_hue_setup_3);
+    poststr(request, g_serial);
+    poststr(request, g_hue_setup_4);
+    poststr(request, g_uid);
+    poststr(request, g_hue_setup_5);
+    poststr(request, NULL);
 
-	stat_setupXMLVisits++;
+    stat_setupXMLVisits++;
 
-	return 0;
+    return 0;
 }
 static int HUE_NotImplemented(http_request_t* request) {
 
-	http_setup(request, httpMimeTypeJson);
-	poststr(request, "{}");
-	poststr(request, NULL);
+    http_setup(request, httpMimeTypeJson);
+    poststr(request, "{}");
+    poststr(request, NULL);
 
-	return 0;
+    return 0;
 }
 static int HUE_Authentication(http_request_t* request) {
 
-	http_setup(request, httpMimeTypeJson);
-	hprintf255(request, "[{\"success\":{\"username\":\"%s\"}}]",g_userID);
-	poststr(request, NULL);
+    http_setup(request, httpMimeTypeJson);
+    hprintf255(request, "[{\"success\":{\"username\":\"%s\"}}]",g_userID);
+    poststr(request, NULL);
 
-	return 0;
+    return 0;
 }
 static int HUE_Config_Internal(http_request_t* request) {
+    char macStr[18] = { 0 };
 
-	poststr(request, "{\"name\":\"Philips hue\",\"mac\":\"");
-	// TODO: mac
-	poststr(request, "\",\"dhcp\":true,\"ipaddress\":\"");
-	// TODO: ip
-	poststr(request, "\",\"netmask\":\"");
-	// TODO: mask
-	poststr(request, "\",\"gateway\":\"");
-	// TODO: gw
-	poststr(request, "\",\"proxyaddress\":\"none\",\"proxyport\":0,\"bridgeid\":\"");
-	// TODO: bridgeid
-	poststr(request, "\",\"UTC\":\"{dt\",\"whitelist\":{\"");
-	// TODO: id
-	poststr(request, "\":{\"last use date\":\"");
-	// TODO: date
-	poststr(request, "\",\"create date\":\"");
-	// TODO: date
-	poststr(request, "\",\"name\":\"Remote\"}},\"swversion\":\"01041302\",\"apiversion\":\"1.17.0\",\"swupdate\":{\"updatestate\":0,\"url\":\"\",\"text\":\"\",\"notify\": false},\"linkbutton\":false,\"portalservices\":false}");
-	poststr(request, NULL);
+    time_t current_time = time(NULL); // Get the current time in time_t (UTC)
+    struct tm* utc_time = gmtime(&current_time); // Convert to UTC time
+    char iso8601[21]; // 20 characters for the formatted string + 1 for null terminator
+    snprintf(iso8601, sizeof(iso8601), "%04d-%02d-%02dT%02d:%02d:%02dZ",
+             utc_time->tm_year + 1900, utc_time->tm_mon + 1, utc_time->tm_mday,
+             utc_time->tm_hour, utc_time->tm_min, utc_time->tm_sec);
 
-	return 0;
+    poststr(request, "{\"name\":\"Philips hue\",\"mac\":\"");
+    poststr(request, HAL_GetMACStr(macStr));
+    // TODO: mac
+    poststr(request, "\",\"dhcp\":true,\"ipaddress\":\"");
+    poststr(request, HAL_GetMyIPString());
+    // TODO: ip
+    poststr(request, "\",\"netmask\":\"");
+    poststr(request,HAL_GetMyMaskString());
+    // TODO: mask
+    poststr(request, "\",\"gateway\":\"");
+    poststr(request,HAL_GetMyGatewayString());
+
+    // TODO: gw
+    poststr(request, "\",\"proxyaddress\":\"none\",\"proxyport\":0,\"bridgeid\":\"");
+    poststr(request,g_bridgeID);
+
+    // TODO: bridgeid
+    poststr(request, "\",\"UTC\":\"");
+    poststr(request, iso8601);
+
+    poststr(request, "\",\"whitelist\":{\"");
+    poststr(request,g_userID);
+    
+    // TODO: id
+    poststr(request, "\":{\"last use date\":\"");
+    poststr(request, iso8601);
+
+    // TODO: date
+    poststr(request, "\",\"create date\":\"");
+    poststr(request, iso8601);
+
+    // TODO: date
+    poststr(request, "\",\"name\":\"Remote\"}},\"swversion\":\"01041302\",\"apiversion\":\"1.17.0\",\"swupdate\":{\"updatestate\":0,\"url\":\"\",\"text\":\"\",\"notify\": false},\"linkbutton\":false,\"portalservices\":false}");
+    poststr(request, NULL);
+
+    return 0;
 }
 
 
@@ -200,54 +224,60 @@ static int HUE_Config_Internal(http_request_t* request) {
 
 static int HUE_GlobalConfig(http_request_t* request) {
 
-	http_setup(request, httpMimeTypeJson);
-	poststr(request, "{\"lights\":{");
-	// TODO: lights
-	poststr(request, "},\"groups\":{},\"schedules\":{},\"config\":");
-	HUE_Config_Internal(request);
-	poststr(request, "}");
-	poststr(request, NULL);
+    http_setup(request, httpMimeTypeJson);
+    poststr(request, "{\"lights\":{");
+    // TODO: lights
+    poststr(request, "\"");
+    // check id later
+    poststr(request, "5");
+    poststr(request, "\":{\"state\":");
 
-	return 0;
+    poststr(request, "},\"groups\":{},\"schedules\":{},\"config\":");
+    HUE_Config_Internal(request);
+    poststr(request, "}");
+    poststr(request, NULL);
+
+    return 0;
 }
 
 
 // http://192.168.0.213/api/username/lights/1/state
 // http://192.168.0.213/description.xml
 int HUE_APICall(http_request_t* request) {
-	if (g_uid == 0) {
-		// not running
-		return 0;
-	}
-	// skip "api/"
-	//const char *api = request->url + 4;
-	//int urlLen = strlen(request->url);
-	// TODO
+    if (g_uid == 0) {
+        // not running
+        return 0;
+    }
+    // skip "api/"
+    //const char *api = request->url + 4;
+    //int urlLen = strlen(request->url);
+    // TODO
 
-	return 0;
+    return 0;
 }
 // backlog startDriver SSDP; startDriver HUE
 // 
 void HUE_Init() {
-	char tmp[64];
-	unsigned char mac[8];
+    char tmp[64];
+    unsigned char mac[8];
 
-	WiFI_GetMacAddress((char*)mac);
-	// username - 
-	snprintf(tmp, sizeof(tmp), "%02X%02X%02X",  mac[3], mac[4], mac[5]);
-	g_userID = strdup(tmp);
-	// SERIAL - as in Tas, full 12 chars of MAC, so 5c cf 7f 13 9f 3d
-	snprintf(tmp, sizeof(tmp), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	g_serial = strdup(tmp);
-	// BridgeID - as in Tas, full 12 chars of MAC with FFFE inside, so 5C CF 7F FFFE 13 9F 3D
-	snprintf(tmp, sizeof(tmp), "%02X%02X%02XFFFE%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-	g_bridgeID = strdup(tmp);
-	// uuid
-	snprintf(tmp, sizeof(tmp), "f6543a06-da50-11ba-8d8f-%s", g_serial);
-	g_uid = strdup(tmp);
+    WiFI_GetMacAddress((char*)mac);
+    // username - 
+    snprintf(tmp, sizeof(tmp), "%02X%02X%02X",  mac[3], mac[4], mac[5]);
+    g_userID = strdup(tmp);
+    // SERIAL - as in Tas, full 12 chars of MAC, so 5c cf 7f 13 9f 3d
+    snprintf(tmp, sizeof(tmp), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    g_serial = strdup(tmp);
+    // BridgeID - as in Tas, full 12 chars of MAC with FFFE inside, so 5C CF 7F FFFE 13 9F 3D
+    snprintf(tmp, sizeof(tmp), "%02X%02X%02XFFFE%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    g_bridgeID = strdup(tmp);
+    // uuid
+    snprintf(tmp, sizeof(tmp), "f6543a06-da50-11ba-8d8f-%s", g_serial);
+    g_uid = strdup(tmp);
 
 
-	//HTTP_RegisterCallback("/api", HTTP_ANY, HUE_APICall);
-	HTTP_RegisterCallback("/description.xml", HTTP_GET, HUE_Setup, 0);
+    //HTTP_RegisterCallback("/api", HTTP_ANY, HUE_APICall);
+    HTTP_RegisterCallback("/description.xml", HTTP_GET, HUE_Setup, 0);
 }
+
 
