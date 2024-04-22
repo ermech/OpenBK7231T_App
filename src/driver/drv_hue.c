@@ -45,7 +45,7 @@ const  char *hue_resp = "HTTP/1.1 200 OK\r\n"
 
 // ARGUMENTS: uuid
 const  char *hue_resp1 = "ST: upnp:rootdevice\r\n"
-  "USN: uuid:%s::upnp:rootdevice\r\n"
+	"USN: uuid:%s::upnp:rootdevice\r\n"
   "\r\n";
 
 // ARGUMENTS: uuid and uuid
@@ -78,7 +78,7 @@ void DRV_HUE_Send_Advert_To(struct sockaddr_in *addr) {
 
         addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE - Sending[0] %s", buffer_out);
         DRV_SSDP_SendReply(addr, buffer_out);
-    
+
     
         // ARGUMENTS: uuid
         snprintf(buffer_out, outBufferLen, hue_resp1, g_uid);
@@ -139,6 +139,7 @@ const char *g_hue_setup_5 = "</UDN>"
    "\r\n";
 
 static int HUE_Setup(http_request_t* request) {
+	addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE Setup starting");
     http_setup(request, httpMimeTypeXML);
     poststr(request, g_hue_setup_1);
     poststr(request, HAL_GetMyIPString());
@@ -150,6 +151,9 @@ static int HUE_Setup(http_request_t* request) {
     poststr(request, g_uid);
     poststr(request, g_hue_setup_5);
     poststr(request, NULL);
+    addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE Setup completed");
+
+
 
     stat_setupXMLVisits++;
 
@@ -160,18 +164,25 @@ static int HUE_NotImplemented(http_request_t* request) {
     http_setup(request, httpMimeTypeJson);
     poststr(request, "{}");
     poststr(request, NULL);
+	addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE not implemented");
+
 
     return 0;
 }
 static int HUE_Authentication(http_request_t* request) {
+		addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE auth entered");
 
     http_setup(request, httpMimeTypeJson);
     hprintf255(request, "[{\"success\":{\"username\":\"%s\"}}]",g_userID);
     poststr(request, NULL);
+			addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE auth exiting");
+
 
     return 0;
 }
 static int HUE_Config_Internal(http_request_t* request) {
+				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE config internal entering");
+
     char macStr[18] = { 0 };
 
     time_t current_time = time(NULL); // Get the current time in time_t (UTC)
@@ -215,6 +226,7 @@ static int HUE_Config_Internal(http_request_t* request) {
     // TODO: date
     poststr(request, "\",\"name\":\"Remote\"}},\"swversion\":\"01041302\",\"apiversion\":\"1.17.0\",\"swupdate\":{\"updatestate\":0,\"url\":\"\",\"text\":\"\",\"notify\": false},\"linkbutton\":false,\"portalservices\":false}");
     poststr(request, NULL);
+				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE config internal exiting with %s", request->reply);
 
     return 0;
 }
@@ -223,6 +235,7 @@ static int HUE_Config_Internal(http_request_t* request) {
 
 
 static int HUE_GlobalConfig(http_request_t* request) {
+				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE global config entering");
 
     http_setup(request, httpMimeTypeJson);
     poststr(request, "{\"lights\":{");
@@ -236,6 +249,7 @@ static int HUE_GlobalConfig(http_request_t* request) {
     HUE_Config_Internal(request);
     poststr(request, "}");
     poststr(request, NULL);
+				addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE global config exiting");
 
     return 0;
 }
@@ -275,6 +289,7 @@ void HUE_Init() {
     snprintf(tmp, sizeof(tmp), "f6543a06-da50-11ba-8d8f-%s", g_serial);
     g_uid = strdup(tmp);
 
+					addLogAdv(LOG_ALL, LOG_FEATURE_HTTP, "HUE init has finished");
 
     //HTTP_RegisterCallback("/api", HTTP_ANY, HUE_APICall);
     HTTP_RegisterCallback("/description.xml", HTTP_GET, HUE_Setup, 0);
